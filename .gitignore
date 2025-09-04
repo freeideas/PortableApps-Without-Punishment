@@ -1,0 +1,59 @@
+# IMPORTANT: No PortableApps.com copyrighted content
+# DO NOT COMMIT any actual PortableApps applications
+*Portable/
+*Portable.exe
+PortableApps/
+examples/
+test/
+
+# NSIS-related (proprietary)
+NSISPortable*/
+*.nsi
+
+# Compiled binaries (keep source only)
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build directories
+builds/
+bin/
+
+# EXCEPTION: Allow release executables
+!releases/*.exe
+
+# Temporary files
+tmp/
+*.tmp
+*.temp
+*.bak
+*~
+
+# Build artifacts
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project-specific
+CLAUDE.md
+
+# Go dependencies
+go.sum
+go.mod
