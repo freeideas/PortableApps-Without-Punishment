@@ -1,0 +1,19 @@
+[package]
+name = "restore-punishment"
+version = "1.0.0"
+edition = "2021"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = { workspace = true }
+
+[[bin]]
+name = "restore-punishment"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+walkdir = { workspace = true }
+regex = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+winapi = { workspace = true }

@@ -1,9 +1,9 @@
 ; PortableApps Without Punishment Installer
-; NSIS Script for GUI installation
+; NSIS Script for GUI installation with uninstaller support
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1845"
+!define BUILD_DATE "2025-09-04-1848"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -14,9 +14,10 @@
 ; General settings
 Name "${PRODUCT_NAME}"
 OutFile "..\releases\PortableApps Without Punishment ${BUILD_DATE}.exe"
-InstallDir "$TEMP\NoPunish"
+InstallDir "$LOCALAPPDATA\PortableAppsWithoutPunishment"
 RequestExecutionLevel user
 ShowInstDetails show
+ShowUninstDetails show
 
 ; Interface settings
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
@@ -37,8 +38,12 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Installation Complete"
-!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour PortableApp(s) will no longer punish you!"
+!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour PortableApp(s) will no longer punish you!$\r$\n$\r$\nTo restore punishment later, run the uninstaller from Add/Remove Programs."
 !insertmacro MUI_PAGE_FINISH
+
+; Uninstaller pages
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
 
 ; Languages
 !insertmacro MUI_LANGUAGE "English"
@@ -83,8 +88,10 @@ FunctionEnd
 
 ; Sections
 Section "MainSection"
-    ; Extract embedded files to temp directory
+    ; Create installation directory
     SetOutPath "$INSTDIR"
+    
+    ; Extract files needed for patching
     File "..\\builds\\rust\\replacer.exe"
     File "..\\builds\\rust\\universal-launcher.exe"
     
@@ -99,18 +106,35 @@ Section "MainSection"
     ${If} $0 == "0"
         DetailPrint ""
         DetailPrint "Success! Your PortableApps have been patched."
-        ; Save successful directory to registry for next time
+        
+        ; Create uninstaller
+        WriteUninstaller "$INSTDIR\Uninstall.exe"
+        
+        ; Save directory info to registry
         WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
         WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
+        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "InstallDir" "$INSTDIR"
+        
+        ; Add uninstall information to registry
+        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
+        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "InstallLocation" "$INSTDIR"
+        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" "${PRODUCT_VERSION}"
+        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "Publisher" "PortableApps Without Punishment"
+        WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoModify" 1
+        WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoRepair" 1
     ${Else}
         DetailPrint ""
         DetailPrint "Some apps may not have been patched. Check the log above."
+        ; Still create uninstaller for partial success
+        WriteUninstaller "$INSTDIR\Uninstall.exe"
+        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
+        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "InstallDir" "$INSTDIR"
     ${EndIf}
     
-    ; Clean up temp files
+    ; Clean up temp installation files but keep uninstaller
     Delete "$INSTDIR\replacer.exe"
     Delete "$INSTDIR\universal-launcher.exe"
-    RMDir "$INSTDIR"
 SectionEnd
 
 ; Custom functions
@@ -170,3 +194,49 @@ Function ValidateSelection
         Abort
     ${EndIf}
 FunctionEnd
+
+; Uninstaller section
+Section "Uninstall"
+    ; Read the stored PortableApps directory
+    ReadRegStr $PortableAppsDir HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory"
+    
+    ${If} $PortableAppsDir == ""
+        MessageBox MB_OK|MB_ICONSTOP "Cannot find the PortableApps directory that was previously patched.$\r$\n$\r$\nUninstallation cannot proceed automatically."
+        Abort
+    ${EndIf}
+    
+    DetailPrint "Restoring punishment to PortableApps in: $PortableAppsDir"
+    DetailPrint ""
+    
+    ; Extract RestorePunishment tool to temp directory
+    SetOutPath "$TEMP"
+    File "..\\builds\\rust\\restore-punishment.exe"
+    
+    ; Run the restoration tool
+    DetailPrint "Running punishment restoration tool..."
+    nsExec::ExecToLog '"$TEMP\restore-punishment.exe" "$PortableAppsDir"'
+    Pop $0
+    
+    ${If} $0 == "0"
+        DetailPrint ""
+        DetailPrint "Success! Punishment has been restored to your PortableApps."
+        DetailPrint "Your apps will now show 'not closed properly' warnings again."
+    ${Else}
+        DetailPrint ""
+        DetailPrint "Some apps may not have been restored. Check the log above."
+    ${EndIf}
+    
+    ; Clean up temp files
+    Delete "$TEMP\restore-punishment.exe"
+    
+    ; Remove registry entries
+    DeleteRegKey HKCU "Software\PortableAppsWithoutPunishment"
+    DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+    
+    ; Remove uninstaller and installation directory
+    Delete "$INSTDIR\Uninstall.exe"
+    RMDir "$INSTDIR"
+    
+    DetailPrint ""
+    DetailPrint "Uninstallation complete. PortableApps punishment has been restored!"
+SectionEnd

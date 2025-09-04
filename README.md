@@ -13,7 +13,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-04-1845.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-04-1845.exe))
+(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-04-1848.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-04-1848.exe))
 
 ## Problem
 
@@ -49,6 +49,21 @@ Simply download and run the latest `PortableApps Without Punishment YYYY-MM-DD-H
    - A directory containing multiple PortableApps (e.g., `D:\PortableApps`)
 3. Click Install and watch as your apps are patched
 4. Done! No more annoying warnings
+
+## Uninstallation (Restoring Punishment)
+
+If you ever want to restore the original "not closed properly" warnings:
+
+1. Go to **Settings > Apps > Apps & features** (or **Control Panel > Add/Remove Programs**)
+2. Find **"PortableApps Without Punishment"** in the list
+3. Click **Uninstall**
+4. The uninstaller will automatically restore all your PortableApps to their original punishing state
+
+The uninstaller uses a built-in RestorePunishment tool that:
+- Removes all Universal Launchers
+- Restores original PortableApps launchers  
+- Cleans up backup configuration files
+- Brings back the medieval punishment warnings
 
 ## How It Works
 

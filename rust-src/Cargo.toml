@@ -1,5 +1,5 @@
 [workspace]
-members = ["universal-launcher", "replacer"]
+members = ["universal-launcher", "replacer", "restore-punishment"]
 resolver = "2"
 
 [workspace.dependencies]
