@@ -6,11 +6,11 @@
 
 ![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.jpg)
 
-Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and wait through the cleanup process. It's like digital detention for a crime you didn't commit!
+Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and then manually re-launch the app, as if you committed a medieval sin!
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-(Feel free to ignore the rest of this cleverly written README.md, and just run this program: [PortableApps Without Punishment.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment.exe))
+(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment.exe))
 
 ## Problem
 
