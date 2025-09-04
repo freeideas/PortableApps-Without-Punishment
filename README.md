@@ -172,7 +172,7 @@ This project is released into the public domain. Use it freely for any purpose.
 
 ## Author
 
-Created to save humanity from clicking "OK" on unnecessary warning dialogs, one PortableApp at a time.
+Created by a Basilian Alepian monk of the Melkite Greek Catholic Church, to save humanity from punishment for its sins.
 
 ---
 
