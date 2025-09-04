@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1836"
+!define BUILD_DATE "2025-09-04-1845"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -37,7 +37,7 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Installation Complete"
-!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour applications will no longer punish you!"
+!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour PortableApp(s) will no longer punish you!"
 !insertmacro MUI_PAGE_FINISH
 
 ; Languages

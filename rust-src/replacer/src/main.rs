@@ -65,11 +65,25 @@ fn main() -> Result<()> {
     
     // Process each app
     let mut success_count = 0;
+    let mut updated_count = 0;
     for app_launcher in &apps {
         match replace_app_launcher(app_launcher, &universal_launcher_path) {
-            Ok(_) => {
-                println!("✅ Success: {}", app_launcher.file_name().unwrap_or_default().to_string_lossy());
-                success_count += 1;
+            Ok(action) => {
+                let app_name = app_launcher.file_name().unwrap_or_default().to_string_lossy();
+                match action.as_str() {
+                    "updated" => {
+                        println!("🔄 Updated: {} (already patched, universal launcher updated)", app_name);
+                        updated_count += 1;
+                    }
+                    "patched" => {
+                        println!("✅ Patched: {} (first-time patch)", app_name);
+                        success_count += 1;
+                    }
+                    _ => {
+                        println!("✅ Success: {}", app_name);
+                        success_count += 1;
+                    }
+                }
             }
             Err(e) => {
                 println!("❌ Failed: {} - {}", app_launcher.file_name().unwrap_or_default().to_string_lossy(), e);
@@ -78,11 +92,21 @@ fn main() -> Result<()> {
     }
     
     println!();
-    println!("Summary: {} of {} apps successfully patched", success_count, apps.len());
+    let total_processed = success_count + updated_count;
+    if updated_count > 0 {
+        println!("Summary: {} new patches, {} updates, {} total processed of {} apps found", 
+                success_count, updated_count, total_processed, apps.len());
+    } else {
+        println!("Summary: {} of {} apps successfully patched", success_count, apps.len());
+    }
     
-    if success_count > 0 {
+    if total_processed > 0 {
         println!();
-        println!("🎉 PortableApps have been patched! No more 'not closed properly' warnings!");
+        if updated_count > 0 {
+            println!("🎉 PortableApps have been patched/updated! No more 'not closed properly' warnings!");
+        } else {
+            println!("🎉 PortableApps have been patched! No more 'not closed properly' warnings!");
+        }
     }
     
     Ok(())
@@ -123,14 +147,8 @@ fn find_portable_apps<P: AsRef<Path>>(root_dir: P) -> Result<Vec<PathBuf>> {
                 if let Some(app_dir) = path.parent() {
                     let app_info_path = app_dir.join("App").join("AppInfo");
                     if app_info_path.exists() {
-                        // Check if it's not already patched
-                        let base_name = path.file_stem().unwrap_or_default().to_string_lossy();
-                        let original_name = format!("{}_original.exe", base_name);
-                        let original_path = app_dir.join(original_name);
-                        
-                        if !original_path.exists() {
-                            apps.push(path.to_path_buf());
-                        }
+                        // Include all valid PortableApps (patched or unpatched)
+                        apps.push(path.to_path_buf());
                     }
                 }
             }
@@ -140,7 +158,7 @@ fn find_portable_apps<P: AsRef<Path>>(root_dir: P) -> Result<Vec<PathBuf>> {
     Ok(apps)
 }
 
-fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_path: &str) -> Result<()> {
+fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_path: &str) -> Result<String> {
     let launcher_path = launcher_path.as_ref();
     let launcher_dir = launcher_path.parent()
         .context("Failed to get launcher directory")?;
@@ -156,12 +174,15 @@ fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_pat
     let original_name = format!("{}_original.exe", base_name);
     let original_path = launcher_dir.join(&original_name);
     
-    // Check if already replaced
+    // Handle already patched apps by updating the universal launcher
     if original_path.exists() {
-        return Err(anyhow::anyhow!("already patched (found {})", original_name));
+        // App is already patched - just update the universal launcher
+        fs::copy(universal_launcher_path, launcher_path)
+            .context("failed to update universal launcher")?;
+        return Ok("updated".to_string());
     }
     
-    // Step 1: Rename original launcher to *_original.exe
+    // Step 1: Rename original launcher to *_original.exe (first-time patch)
     fs::rename(launcher_path, &original_path)
         .with_context(|| format!("failed to rename original launcher"))?;
     
@@ -183,7 +204,7 @@ fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_pat
         }
     }
     
-    Ok(())
+    Ok("patched".to_string())
 }
 
 #[cfg(windows)]
