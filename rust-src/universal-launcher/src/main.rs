@@ -1,6 +1,8 @@
 // Universal PortableApps Launcher - Rust Edition
 // Eliminates "application did not close properly" warnings by cleaning up runtime data
 
+#![cfg_attr(windows, windows_subsystem = "windows")]
+
 use anyhow::{Context, Result};
 use std::env;
 use std::fs;
@@ -14,7 +16,6 @@ use std::process::Command;
 use winapi::um::{
     errhandlingapi::GetLastError,
     processthreadsapi::{CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW},
-    winbase::CREATE_NO_WINDOW,
     winuser::{MessageBoxW, MB_ICONERROR, MB_OK},
 };
 
@@ -108,12 +109,13 @@ fn cleanup_runtime_data(app_dir: &Path) -> Result<()> {
 
 fn copy_ini_file(app_dir: &Path, wrapper_name: &str) -> Result<()> {
     let source_ini = app_dir.join("App/AppInfo/Launcher").join(format!("{}.ini", wrapper_name));
-    let target_ini = app_dir.join("App/AppInfo/Launcher/launcher.ini");
+    let backup_ini = app_dir.join("App/AppInfo/Launcher").join(format!("{}_original.ini", wrapper_name));
     
-    if source_ini.exists() && source_ini != target_ini {
-        fs::copy(&source_ini, &target_ini)
-            .with_context(|| format!("Failed to copy INI file from {} to {}", 
-                source_ini.display(), target_ini.display()))?;
+    // Always create/update the backup INI file for the original launcher to use
+    if source_ini.exists() {
+        fs::copy(&source_ini, &backup_ini)
+            .with_context(|| format!("Failed to backup INI file from {} to {}", 
+                source_ini.display(), backup_ini.display()))?;
     }
     
     Ok(())
