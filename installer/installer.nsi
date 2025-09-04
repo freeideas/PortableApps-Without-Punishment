@@ -35,7 +35,7 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Installation Complete"
-!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour applications will no longer show annoying warning messages!"
+!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour applications will no longer punish you!"
 !insertmacro MUI_PAGE_FINISH
 
 ; Languages
@@ -52,8 +52,8 @@ Var BrowseButton
 Section "MainSection"
     ; Extract embedded files to temp directory
     SetOutPath "$INSTDIR"
-    File "..\releases\NoPunishReplacer.exe"
-    File "..\releases\UniversalLauncher.exe"
+    File "..\builds\go\NoPunishReplacer.exe"
+    File "..\builds\c\UniversalLauncher.exe"
     
     ; Show what we're doing
     DetailPrint "Patching PortableApps in: $PortableAppsDir"
