@@ -1,9 +1,9 @@
 ; PortableApps Without Punishment Installer
-; NSIS Script for GUI installation with uninstaller support
+; NSIS Script with toggle for Remove/Restore Punishment
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1848"
+!define BUILD_DATE "2025-09-04-1859"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -14,10 +14,9 @@
 ; General settings
 Name "${PRODUCT_NAME}"
 OutFile "..\releases\PortableApps Without Punishment ${BUILD_DATE}.exe"
-InstallDir "$LOCALAPPDATA\PortableAppsWithoutPunishment"
+InstallDir "$TEMP\NoPunish"
 RequestExecutionLevel user
 ShowInstDetails show
-ShowUninstDetails show
 
 ; Interface settings
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
@@ -27,8 +26,11 @@ ShowUninstDetails show
 
 ; Pages
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${PRODUCT_NAME}"
-!define MUI_WELCOMEPAGE_TEXT "This wizard will help you remove the annoying 'application was not closed properly' warnings from your PortableApps.$\r$\n$\r$\nNo more punishment for improper shutdowns!$\r$\n$\r$\nVersion: ${PRODUCT_VERSION} (Built: ${BUILD_DATE})$\r$\n$\r$\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT "This wizard can either remove or restore the annoying 'application was not closed properly' warnings in your PortableApps.$\r$\n$\r$\n• Remove Punishment: Eliminate the warnings forever$\r$\n• Restore Punishment: Bring back the medieval shame$\r$\n$\r$\nVersion: ${PRODUCT_VERSION} (Built: ${BUILD_DATE})$\r$\n$\r$\nSupports silent mode: /S /RESTORE /D=path$\r$\n$\r$\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
+
+; Custom page for mode selection (Remove or Restore punishment)
+Page custom SelectMode ValidateMode
 
 ; Custom page for directory selection
 Page custom SelectPortableAppsDir ValidateSelection
@@ -37,13 +39,9 @@ Page custom SelectPortableAppsDir ValidateSelection
 !define MUI_PAGE_HEADER_SUBTEXT "Please wait while your PortableApps are being patched..."
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_TITLE "Installation Complete"
-!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} has successfully patched your PortableApps.$\r$\n$\r$\nYour PortableApp(s) will no longer punish you!$\r$\n$\r$\nTo restore punishment later, run the uninstaller from Add/Remove Programs."
+!define MUI_FINISHPAGE_TITLE "Operation Complete"
+!define MUI_FINISHPAGE_TEXT "The operation completed successfully!"
 !insertmacro MUI_PAGE_FINISH
-
-; Uninstaller pages
-!insertmacro MUI_UNPAGE_CONFIRM
-!insertmacro MUI_UNPAGE_INSTFILES
 
 ; Languages
 !insertmacro MUI_LANGUAGE "English"
@@ -55,17 +53,28 @@ Var Label
 Var DirRequest
 Var BrowseButton
 Var SilentMode
+Var RestoreMode
+Var RadioRemove
+Var RadioRestore
+Var FinishText
 
 ; Functions
 Function .onInit
-    ; Parse command line arguments
+    ; Initialize variables
     StrCpy $SilentMode "false"
+    StrCpy $RestoreMode "false"
+    StrCpy $PortableAppsDir ""
     
-    ; Check for silent mode flag
+    ; Parse command line arguments
     ${GetParameters} $0
     ${GetOptions} $0 "/S" $1
     IfErrors +2 0
         StrCpy $SilentMode "true"
+    
+    ; Check for restore mode parameter
+    ${GetOptions} $0 "/RESTORE" $1
+    IfErrors +2 0
+        StrCpy $RestoreMode "true"
     
     ; Check for directory parameter
     ${GetOptions} $0 "/D=" $1
@@ -74,67 +83,128 @@ Function .onInit
         Goto done_init
     
     check_registry:
-    ; Try to read last used directory from registry
+    ; Try to read last used directory from registry for convenience
     ReadRegStr $PortableAppsDir HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory"
     IfErrors done_init 0
     
     done_init:
-    ; If we have a directory and silent mode, skip GUI
+    ; If we have all parameters and silent mode, skip GUI
     ${If} $SilentMode == "true"
     ${AndIf} $PortableAppsDir != ""
         SetSilent silent
     ${EndIf}
 FunctionEnd
 
-; Sections
-Section "MainSection"
-    ; Create installation directory
-    SetOutPath "$INSTDIR"
+; Custom function for mode selection
+Function SelectMode
+    nsDialogs::Create 1018
+    Pop $Dialog
     
-    ; Extract files needed for patching
-    File "..\\builds\\rust\\replacer.exe"
-    File "..\\builds\\rust\\universal-launcher.exe"
-    
-    ; Show what we're doing
-    DetailPrint "Patching PortableApps in: $PortableAppsDir"
-    DetailPrint ""
-    
-    ; Run replacer with the selected directory
-    nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe"'
-    Pop $0
-    
-    ${If} $0 == "0"
-        DetailPrint ""
-        DetailPrint "Success! Your PortableApps have been patched."
-        
-        ; Create uninstaller
-        WriteUninstaller "$INSTDIR\Uninstall.exe"
-        
-        ; Save directory info to registry
-        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
-        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
-        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "InstallDir" "$INSTDIR"
-        
-        ; Add uninstall information to registry
-        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
-        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
-        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "InstallLocation" "$INSTDIR"
-        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" "${PRODUCT_VERSION}"
-        WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "Publisher" "PortableApps Without Punishment"
-        WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoModify" 1
-        WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "NoRepair" 1
-    ${Else}
-        DetailPrint ""
-        DetailPrint "Some apps may not have been patched. Check the log above."
-        ; Still create uninstaller for partial success
-        WriteUninstaller "$INSTDIR\Uninstall.exe"
-        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
-        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "InstallDir" "$INSTDIR"
+    ${If} $Dialog == error
+        Abort
     ${EndIf}
     
-    ; Clean up temp installation files but keep uninstaller
-    Delete "$INSTDIR\replacer.exe"
-    Delete "$INSTDIR\universal-launcher.exe"
+    !insertmacro MUI_HEADER_TEXT "Choose Operation" "Select whether to remove or restore PortableApps punishment"
+    
+    ${NSD_CreateLabel} 0 20u 100% 30u "What would you like to do with your PortableApps?$\r$\n$\r$\nChoose 'Remove Punishment' to eliminate the annoying 'not closed properly' warnings, or 'Restore Punishment' to bring back the original behavior."
+    Pop $Label
+    
+    ${NSD_CreateRadioButton} 20u 60u 200u 12u "Remove Punishment (Patch PortableApps)"
+    Pop $RadioRemove
+    ${NSD_CreateRadioButton} 20u 80u 200u 12u "Restore Punishment (Unpatch PortableApps)"
+    Pop $RadioRestore
+    
+    ; Set default selection based on variable
+    ${If} $RestoreMode == "true"
+        ${NSD_Check} $RadioRestore
+    ${Else}
+        ${NSD_Check} $RadioRemove
+    ${EndIf}
+    
+    nsDialogs::Show
+FunctionEnd
+
+Function ValidateMode
+    ${NSD_GetState} $RadioRestore $0
+    ${If} $0 == 1
+        StrCpy $RestoreMode "true"
+    ${Else}
+        StrCpy $RestoreMode "false"
+    ${EndIf}
+FunctionEnd
+
+; Sections
+Section "MainSection"
+    ; Create temporary directory
+    SetOutPath "$INSTDIR"
+    
+    ${If} $RestoreMode == "true"
+        ; Restore punishment mode
+        DetailPrint "Restoring punishment to PortableApps in: $PortableAppsDir"
+        DetailPrint ""
+        
+        ; Extract RestorePunishment tool
+        File "..\\builds\\rust\\restore-punishment.exe"
+        
+        ; Run the restoration tool
+        DetailPrint "Running punishment restoration tool..."
+        nsExec::ExecToLog '"$INSTDIR\restore-punishment.exe" "$PortableAppsDir"'
+        Pop $0
+        
+        ${If} $0 == "0"
+            DetailPrint ""
+            DetailPrint "Success! Punishment has been restored to your PortableApps."
+            DetailPrint "Your apps will now show 'not closed properly' warnings again."
+            
+            ; Save directory for future runs
+            WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
+            WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
+            
+            StrCpy $FinishText "Punishment has been restored to your PortableApps!$\r$\n$\r$\nYour apps will now punish you with 'not closed properly' warnings again."
+        ${Else}
+            DetailPrint ""
+            DetailPrint "Some apps may not have been restored. Check the log above."
+            StrCpy $FinishText "Restoration completed with some issues. Check the log above for details."
+        ${EndIf}
+        
+        ; Clean up
+        Delete "$INSTDIR\restore-punishment.exe"
+    ${Else}
+        ; Remove punishment mode (original behavior)
+        DetailPrint "Removing punishment from PortableApps in: $PortableAppsDir"
+        DetailPrint ""
+        
+        ; Extract files needed for patching
+        File "..\\builds\\rust\\replacer.exe"
+        File "..\\builds\\rust\\universal-launcher.exe"
+        
+        ; Run replacer with the selected directory
+        nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe"'
+        Pop $0
+        
+        ${If} $0 == "0"
+            DetailPrint ""
+            DetailPrint "Success! Your PortableApps have been patched."
+            DetailPrint "No more 'not closed properly' warnings!"
+            
+            ; Save directory for future runs
+            WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
+            WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
+            
+            StrCpy $FinishText "Your PortableApps have been patched!$\r$\n$\r$\nNo more annoying 'not closed properly' warnings!"
+        ${Else}
+            DetailPrint ""
+            DetailPrint "Some apps may not have been patched. Check the log above."
+            StrCpy $FinishText "Patching completed with some issues. Check the log above for details."
+        ${EndIf}
+        
+        ; Clean up temp installation files
+        Delete "$INSTDIR\replacer.exe"
+        Delete "$INSTDIR\universal-launcher.exe"
+    ${EndIf}
+    
+    ; Remove temporary directory
+    RMDir "$INSTDIR"
 SectionEnd
 
 ; Custom functions
@@ -195,48 +265,3 @@ Function ValidateSelection
     ${EndIf}
 FunctionEnd
 
-; Uninstaller section
-Section "Uninstall"
-    ; Read the stored PortableApps directory
-    ReadRegStr $PortableAppsDir HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory"
-    
-    ${If} $PortableAppsDir == ""
-        MessageBox MB_OK|MB_ICONSTOP "Cannot find the PortableApps directory that was previously patched.$\r$\n$\r$\nUninstallation cannot proceed automatically."
-        Abort
-    ${EndIf}
-    
-    DetailPrint "Restoring punishment to PortableApps in: $PortableAppsDir"
-    DetailPrint ""
-    
-    ; Extract RestorePunishment tool to temp directory
-    SetOutPath "$TEMP"
-    File "..\\builds\\rust\\restore-punishment.exe"
-    
-    ; Run the restoration tool
-    DetailPrint "Running punishment restoration tool..."
-    nsExec::ExecToLog '"$TEMP\restore-punishment.exe" "$PortableAppsDir"'
-    Pop $0
-    
-    ${If} $0 == "0"
-        DetailPrint ""
-        DetailPrint "Success! Punishment has been restored to your PortableApps."
-        DetailPrint "Your apps will now show 'not closed properly' warnings again."
-    ${Else}
-        DetailPrint ""
-        DetailPrint "Some apps may not have been restored. Check the log above."
-    ${EndIf}
-    
-    ; Clean up temp files
-    Delete "$TEMP\restore-punishment.exe"
-    
-    ; Remove registry entries
-    DeleteRegKey HKCU "Software\PortableAppsWithoutPunishment"
-    DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-    
-    ; Remove uninstaller and installation directory
-    Delete "$INSTDIR\Uninstall.exe"
-    RMDir "$INSTDIR"
-    
-    DetailPrint ""
-    DetailPrint "Uninstallation complete. PortableApps punishment has been restored!"
-SectionEnd

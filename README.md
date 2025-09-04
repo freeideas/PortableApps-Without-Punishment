@@ -13,7 +13,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-04-1848.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-04-1848.exe))
+(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-04-1859.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-04-1859.exe))
 
 ## Problem
 
@@ -31,39 +31,49 @@ The UniversalLauncher acts as a transparent replacement that:
 
 ## Features
 
+- **Toggle Operation**: Single installer can both remove AND restore punishment
 - **Universal Design**: Works with ANY PortableApps application
-- **GUI Installer**: User-friendly installation process
-- **Batch Processing**: Patch all your PortableApps at once
+- **Smart Updates**: Automatically updates previously patched apps with fixed launchers
+- **GUI & Silent Mode**: User-friendly installer with command-line automation support
+- **Memory Safe**: Built with Rust for guaranteed memory safety and reliability
+- **No Installation Required**: Single executable, no files left behind
+- **Directory Memory**: Remembers your PortableApps location for convenience
 - **Fully Transparent**: Users won't know it's there (except no more warnings!)
 - **Preserves Functionality**: All command-line arguments and features work normally
-- **Memory Safe**: Built with Rust for guaranteed memory safety and reliability
 - **Self-Aware**: Automatically detects which app it's wrapping based on filename
 
-## Installation
+## Usage
 
 Simply download and run the latest `PortableApps Without Punishment YYYY-MM-DD-HHMM.exe` from the releases folder:
 
-1. The installer will open a dialog to select your PortableApps location
-2. Choose either:
+1. **Choose Operation**: Select either "Remove Punishment" (default) or "Restore Punishment"
+   - **Remove Punishment**: Eliminates the annoying warnings forever
+   - **Restore Punishment**: Brings back the original warnings (for masochists)
+
+2. **Select Directory**: Choose your PortableApps location:
    - A single PortableApp directory (e.g., `D:\PortableApps\FirefoxPortable`)
    - A directory containing multiple PortableApps (e.g., `D:\PortableApps`)
-3. Click Install and watch as your apps are patched
-4. Done! No more annoying warnings
 
-## Uninstallation (Restoring Punishment)
+3. **Run**: Watch as your apps are patched or restored
 
-If you ever want to restore the original "not closed properly" warnings:
+4. **Done!** The installer remembers your directory for future runs
 
-1. Go to **Settings > Apps > Apps & features** (or **Control Panel > Add/Remove Programs**)
-2. Find **"PortableApps Without Punishment"** in the list
-3. Click **Uninstall**
-4. The uninstaller will automatically restore all your PortableApps to their original punishing state
+### Silent Mode
 
-The uninstaller uses a built-in RestorePunishment tool that:
-- Removes all Universal Launchers
-- Restores original PortableApps launchers  
-- Cleans up backup configuration files
-- Brings back the medieval punishment warnings
+For automation or batch processing:
+
+```cmd
+# Remove punishment (default)
+"PortableApps Without Punishment.exe" /S /D="D:\PortableApps"
+
+# Restore punishment
+"PortableApps Without Punishment.exe" /S /RESTORE /D="D:\PortableApps"
+```
+
+**Parameters:**
+- `/S` - Silent mode (no GUI)
+- `/RESTORE` - Restore punishment mode (default is remove)
+- `/D=path` - Target directory path
 
 ## How It Works
 
@@ -108,12 +118,14 @@ PortableAppsWithoutPunishment/
 ├── README.md                    # This file
 ├── rust-src/                    # Rust source code
 │   ├── universal-launcher/      # Universal launcher that replaces each PortableApp launcher
-│   │   └── src/main.rs
+│   │   └── src/main.rs         # Fixed: no console window, proper INI backup
 │   ├── replacer/                # Command-line tool that finds and patches PortableApps
-│   │   └── src/main.rs
+│   │   └── src/main.rs         # Fixed: updates already-patched apps
+│   ├── restore-punishment/      # Tool that reverses the patching process
+│   │   └── src/main.rs         # Restores original launchers and punishment
 │   └── Cargo.toml               # Rust workspace configuration
 ├── installer/                   # NSIS installer files
-│   └── installer.nsi            # NSIS installer script
+│   └── installer.nsi            # Toggle installer (Remove/Restore modes)
 ├── releases/                    # Pre-built installer for distribution
 │   └── PortableApps Without Punishment.exe  # The installer
 └── docs/                        # Additional documentation
@@ -151,19 +163,34 @@ The wrapper only removes temporary runtime files. It never touches:
 - Application files
 - Configuration that should persist
 
+## Recent Fixes & Improvements
+
+**Version 2025-09-04-1859 includes major fixes:**
+
+- **Fixed Console Window Flash**: Universal Launcher now builds as Windows GUI application, eliminating the brief console window that appeared when launching apps
+- **Fixed INI Backup Issue**: Corrected INI file backup to create `[AppName]_original.ini` instead of incorrect `launcher.ini`
+- **Smart Update System**: Replacer now updates already-patched apps with fixed components instead of skipping them
+- **Toggle Operation**: Single installer can both remove and restore punishment
+- **Silent Mode Support**: Command-line automation with `/S /RESTORE /D=path` parameters
+
+**If you used a previous version that had issues:**
+Simply run the new installer in "Remove Punishment" mode on your PortableApps directory. It will automatically update all previously patched apps with the fixed Universal Launcher.
+
 ## Troubleshooting
 
 ### "Original launcher not found" error
+- Run the latest installer to update with fixed components
 - Ensure the original launcher was renamed to `[AppName]_original.exe`
 - Check that both files are in the same directory
 
 ### Application doesn't start
+- Try running the installer again to update components
 - Verify the Universal Launcher has the exact name of the original launcher
-- Check that `[AppName]_original.exe` is the actual PortableApps launcher, not the main program
+- Check that `[AppName]_original.exe` is the actual PortableApps launcher
 
-### Configuration not loading
-- The Universal Launcher automatically backs up the INI file to `[AppName]_original.ini`
-- Check that `App/AppInfo/Launcher/[AppName].ini` exists
+### Console window still appears
+- This was fixed in the latest version - run the installer again to update
+- The Universal Launcher now builds as Windows GUI application
 
 ## Contributing
 
