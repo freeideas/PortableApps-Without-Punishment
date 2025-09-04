@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1911"
+!define BUILD_DATE "2025-09-04-1915"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -40,7 +40,7 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Operation Complete"
-!define MUI_FINISHPAGE_TEXT "The operation completed successfully!"
+!define MUI_FINISHPAGE_TEXT "The operation completed successfully!$\r$\n$\r$\nIf PortableApps updates restore punishment in the future, you can run this installer silently:$\r$\n$\r$\n$\"PortableApps Without Punishment.exe$\" /S$\r$\n(It will remember your directory and remove punishment again)"
 !insertmacro MUI_PAGE_FINISH
 
 ; Languages
