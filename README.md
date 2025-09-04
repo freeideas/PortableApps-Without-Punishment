@@ -4,7 +4,7 @@
 
 *"The application did not close properly last time, YOU IRRESPONSIBLE FILTHY HUMAN!"*
 
-![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.png)
+![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.jpg)
 
 Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and wait through the cleanup process. It's like digital detention for a crime you didn't commit!
 
