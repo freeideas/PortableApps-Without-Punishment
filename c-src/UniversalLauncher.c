@@ -4,11 +4,11 @@
  * This wrapper is self-aware of its filename and automatically:
  * 1. Cleans up runtime data files
  * 2. Copies the matching INI file to launcher.ini
- * 3. Runs launcher.exe (the renamed original)
+ * 3. Runs *_original.exe (the renamed original)
  * 
  * Installation:
- *   1. Rename original (e.g., NSISPortable.exe) to launcher.exe
- *   2. Place this wrapper with the original name (e.g., NSISPortable.exe)
+ *   1. Rename original (e.g., SqlitemanPortable.exe) to SqlitemanPortable_original.exe
+ *   2. Place this wrapper with the original name (e.g., SqlitemanPortable.exe)
  *   3. Done! The wrapper handles everything else automatically
  * 
  * Universal: Just rename this exe to match any PortableApp!
@@ -24,7 +24,6 @@
 #include <shlwapi.h>
 
 #define MAX_PATH_LENGTH 512
-#define LAUNCHER_NAME "launcher.exe"
 
 int FileExists(const char* path) {
     DWORD attrib = GetFileAttributesA(path);
@@ -168,17 +167,24 @@ int main(int argc, char* argv[]) {
         strcpy(wrapperName, "Unknown.exe");
     }
     
-    // Construct path to launcher.exe
-    snprintf(launcherPath, sizeof(launcherPath), "%s\\%s", appDir, LAUNCHER_NAME);
+    // Construct path to *_original.exe based on wrapper name
+    char baseName[MAX_PATH_LENGTH];
+    char* dot;
+    strcpy(baseName, wrapperName);
+    dot = strrchr(baseName, '.');
+    if (dot && _stricmp(dot, ".exe") == 0) {
+        *dot = '\0';
+    }
+    snprintf(launcherPath, sizeof(launcherPath), "%s\\%s_original.exe", appDir, baseName);
     
-    // Check if launcher.exe exists
+    // Check if *_original.exe exists
     if (!FileExists(launcherPath)) {
         char errorMsg[MAX_PATH_LENGTH * 2];
         snprintf(errorMsg, sizeof(errorMsg), 
                 "Original launcher not found:\n%s\n\n"
-                "Please rename the original PortableApps launcher to 'launcher.exe'\n"
-                "and place this wrapper with the original name.", 
-                launcherPath);
+                "This wrapper expects the original PortableApps launcher to be renamed to '%s_original.exe'.\n"
+                "Please use the PortableApps Without Punishment installer.", 
+                launcherPath, baseName);
         MessageBoxA(NULL, errorMsg, "PortableApps Launcher", MB_OK | MB_ICONERROR);
         return 1;
     }
