@@ -6,9 +6,8 @@ PortableApps/
 examples/
 test/
 
-# NSIS-related (proprietary)
+# NSIS-related (proprietary)  
 NSISPortable*/
-*.nsi
 
 # Compiled binaries (keep source only)
 *.exe

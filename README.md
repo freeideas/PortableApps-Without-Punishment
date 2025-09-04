@@ -2,13 +2,14 @@
 
 **Are you tired of being punished by your PortableApps?**
 
+![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.png)
+
 *"The application did not close properly last time it was run and will now clean up."*
 
 Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and wait through the cleanup process. It's like digital detention for a crime you didn't commit!
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.png)
 
 ## Problem
 
