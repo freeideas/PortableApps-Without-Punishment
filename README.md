@@ -13,7 +13,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment.exe))
+(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-04-1822.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-04-1822.exe))
 
 ## Problem
 
@@ -41,7 +41,7 @@ The UniversalLauncher acts as a transparent replacement that:
 
 ## Installation
 
-Simply download and run `PortableApps Without Punishment.exe` from the releases folder:
+Simply download and run the latest `PortableApps Without Punishment YYYY-MM-DD-HHMM.exe` from the releases folder:
 
 1. The installer will open a dialog to select your PortableApps location
 2. Choose either:
