@@ -36,7 +36,7 @@ The UniversalLauncher acts as a transparent replacement that:
 - **Batch Processing**: Patch all your PortableApps at once
 - **Fully Transparent**: Users won't know it's there (except no more warnings!)
 - **Preserves Functionality**: All command-line arguments and features work normally
-- **Lightweight**: UniversalLauncher is only ~45KB with minimal overhead
+- **Memory Safe**: Built with Rust for guaranteed memory safety and reliability
 - **Self-Aware**: Automatically detects which app it's wrapping based on filename
 
 ## Installation
@@ -62,32 +62,23 @@ The Universal Launcher performs these steps each time it runs:
 ## Building from Source
 
 ### Requirements
-- MinGW-w64 compiler (for C code cross-compilation on Linux/Mac)
-- Go compiler (for building NoPunishReplacer)
+- Rust compiler with Windows cross-compilation support
+- MinGW-w64 linker (for cross-compilation on Linux/Mac)  
 - NSIS (for building the GUI installer)
 
 ### Compile Commands
 
-#### UniversalLauncher (C)
-
-##### Linux/Mac (Cross-compile for Windows):
+#### Rust Components (Cross-compile for Windows):
 ```bash
-i686-w64-mingw32-gcc -o UniversalLauncher.exe c-src/UniversalLauncher.c -lshlwapi -mwindows -static
-```
+# Install Windows target
+rustup target add x86_64-pc-windows-gnu
 
-##### Windows (MinGW):
-```cmd
-gcc -o UniversalLauncher.exe c-src/UniversalLauncher.c -lshlwapi -mwindows -static
-```
+# Build both tools
+cd rust-src
+cargo build --release --target x86_64-pc-windows-gnu
 
-##### Windows (Visual Studio):
-```cmd
-cl /Fe:UniversalLauncher.exe c-src/UniversalLauncher.c shlwapi.lib user32.lib /link /SUBSYSTEM:WINDOWS
-```
-
-#### NoPunishReplacer (Go):
-```bash
-GOOS=windows GOARCH=amd64 go build -o NoPunishReplacer.exe go-src/replacer.go
+# Copy to builds directory
+cp target/x86_64-pc-windows-gnu/release/*.exe ../builds/rust/
 ```
 
 #### GUI Installer (NSIS):
@@ -100,16 +91,18 @@ makensis installer/installer.nsi
 ```
 PortableAppsWithoutPunishment/
 ├── README.md                    # This file
-├── c-src/                       # C source code
-│   └── UniversalLauncher.c      # Universal launcher that replaces each PortableApp launcher
-├── go-src/                      # Go source code
-│   └── replacer.go              # Command-line tool that finds and replaces PortableApps launchers
+├── rust-src/                    # Rust source code
+│   ├── universal-launcher/      # Universal launcher that replaces each PortableApp launcher
+│   │   └── src/main.rs
+│   ├── replacer/                # Command-line tool that finds and patches PortableApps
+│   │   └── src/main.rs
+│   └── Cargo.toml               # Rust workspace configuration
 ├── installer/                   # NSIS installer files
 │   └── installer.nsi            # NSIS installer script
 ├── releases/                    # Pre-built installer for distribution
 │   └── PortableApps Without Punishment.exe  # The installer
 └── docs/                        # Additional documentation
-    └── BUILD.md                 # Detailed build instructions
+    └── kick.jpg                 # Punishment illustration
 ```
 
 ## Compatibility
@@ -163,9 +156,9 @@ Improvements and bug fixes are welcome! The codebase is intentionally simple and
 
 ### Key areas for contribution:
 - Additional cleanup patterns for specific apps
-- Improved error handling and logging
 - Enhanced app detection patterns
 - Support for non-standard PortableApp structures
+- Icon extraction and injection for perfect app impersonation
 
 ## License
 
