@@ -4,7 +4,9 @@
 
 *"The application did not close properly last time, YOU IRRESPONSIBLE FILTHY HUMAN!"*
 
-![Stop the punishment!](https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.jpg)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.jpg" alt="Stop the punishment!" />
+</div>
 
 Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and then manually re-launch the app, as if you committed a medieval sin!
 
