@@ -1,0 +1,22 @@
+[package]
+name = "replacer"  
+version = "1.0.0"
+edition = "2021"
+
+[[bin]]
+name = "replacer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+walkdir = { workspace = true }
+regex = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+winapi = { workspace = true }
+
+[profile.release]
+strip = true
+lto = true  
+codegen-units = 1
+panic = "abort"

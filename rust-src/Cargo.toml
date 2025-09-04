@@ -1,0 +1,10 @@
+[workspace]
+members = ["universal-launcher", "replacer"]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1.0"
+walkdir = "2.5"
+regex = "1.10"
+winapi = { version = "0.3", features = ["winuser", "processthreadsapi", "handleapi", "fileapi", "errhandlingapi", "shellapi", "winbase"] }
+glob = "0.3"

@@ -52,15 +52,15 @@ Var BrowseButton
 Section "MainSection"
     ; Extract embedded files to temp directory
     SetOutPath "$INSTDIR"
-    File "..\builds\go\NoPunishReplacer.exe"
-    File "..\builds\c\UniversalLauncher.exe"
+    File "..\\builds\\rust\\replacer.exe"
+    File "..\\builds\\rust\\universal-launcher.exe"
     
     ; Show what we're doing
     DetailPrint "Patching PortableApps in: $PortableAppsDir"
     DetailPrint ""
     
-    ; Run NoPunishReplacer with the selected directory
-    nsExec::ExecToLog '"$INSTDIR\NoPunishReplacer.exe" "$PortableAppsDir" "$INSTDIR\UniversalLauncher.exe"'
+    ; Run replacer with the selected directory
+    nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe"'
     Pop $0
     
     ${If} $0 == "0"
@@ -72,8 +72,8 @@ Section "MainSection"
     ${EndIf}
     
     ; Clean up temp files
-    Delete "$INSTDIR\NoPunishReplacer.exe"
-    Delete "$INSTDIR\UniversalLauncher.exe"
+    Delete "$INSTDIR\replacer.exe"
+    Delete "$INSTDIR\universal-launcher.exe"
     RMDir "$INSTDIR"
 SectionEnd
 

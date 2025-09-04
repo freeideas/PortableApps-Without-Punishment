@@ -1,0 +1,11 @@
+/home/ace/prjx/PortableAppsWithoutPunishment/rust-src/target/x86_64-pc-windows-gnu/release/deps/winapi_util-898c457ccad7426d.d: /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/lib.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/console.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/file.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/sysinfo.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/win.rs
+
+/home/ace/prjx/PortableAppsWithoutPunishment/rust-src/target/x86_64-pc-windows-gnu/release/deps/libwinapi_util-898c457ccad7426d.rlib: /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/lib.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/console.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/file.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/sysinfo.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/win.rs
+
+/home/ace/prjx/PortableAppsWithoutPunishment/rust-src/target/x86_64-pc-windows-gnu/release/deps/libwinapi_util-898c457ccad7426d.rmeta: /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/lib.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/console.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/file.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/sysinfo.rs /home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/win.rs
+
+/home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/lib.rs:
+/home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/console.rs:
+/home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/file.rs:
+/home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/sysinfo.rs:
+/home/ace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/winapi-util-0.1.10/src/win.rs:
