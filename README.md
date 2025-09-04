@@ -17,7 +17,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 ## Problem
 
-PortableApps applications track their runtime state using temporary files. When these applications crash, are force-closed, or experience power loss, these runtime files remain on disk. The next time you launch the app, you're greeted with an annoying warning message about improper shutdown - even though the application works perfectly fine. Then you are punished by having to manually launch the app again -- as if you are doing penance for a medieval sin!
+PortableApps applications track their runtime state using temporary files. When these applications crash, are force-closed, or experience power loss, these runtime files remain on disk. The next time you launch the app, you're greeted with an annoying warning message about improper shutdown - even though the application works perfectly fine. Then you must endure the shame of manually launching the app again.
 
 ## Solution
 
