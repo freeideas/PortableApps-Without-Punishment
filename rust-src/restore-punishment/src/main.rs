@@ -185,7 +185,7 @@ fn confirm_restore() -> bool {
         use std::ffi::OsStr;
         use std::os::windows::ffi::OsStrExt;
         
-        let message = "Are you sure you want to restore punishment to your PortableApps?\n\nThis will:\n• Remove the Universal Launcher\n• Restore original launchers\n• Bring back 'not closed properly' warnings\n\nThis action cannot be easily undone.";
+        let message = "Are you sure you want to restore punishment to your PortableApps?\n\nThis will bring back the 'not closed properly' warnings.\n\nYou can remove punishment again by running the installer.";
         let title = "Confirm Punishment Restoration";
         
         let message_wide: Vec<u16> = OsStr::new(message)
@@ -212,12 +212,9 @@ fn confirm_restore() -> bool {
     {
         println!("Are you sure you want to restore punishment to your PortableApps?");
         println!();
-        println!("This will:");
-        println!("• Remove the Universal Launcher");
-        println!("• Restore original launchers");
-        println!("• Bring back 'not closed properly' warnings");
+        println!("This will bring back the 'not closed properly' warnings.");
         println!();
-        println!("This action cannot be easily undone.");
+        println!("You can remove punishment again by running the installer.");
         println!();
         print!("Continue? (y/N): ");
         
