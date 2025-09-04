@@ -7,6 +7,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/freeideas/PortableApps-Without-Punishment/main/docs/kick.jpg" alt="Stop the punishment!" />
 </div>
+<hr/>
 
 Sound familiar? Every time your app crashes, loses power, or Windows decides to update without asking, you're forced to acknowledge your "mistake" and then manually re-launch the app, as if you committed a medieval sin!
 
