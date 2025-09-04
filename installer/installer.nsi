@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1908"
+!define BUILD_DATE "2025-09-04-1911"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -106,12 +106,12 @@ Function SelectMode
     
     !insertmacro MUI_HEADER_TEXT "Choose Operation" "Select whether to remove or restore PortableApps punishment"
     
-    ${NSD_CreateLabel} 0 20u 100% 30u "What would you like to do with your PortableApps?$\r$\n$\r$\nChoose 'Remove Punishment' to eliminate the annoying 'not closed properly' warnings, or 'Restore Punishment' to bring back the original behavior."
+    ${NSD_CreateLabel} 0 10u 100% 40u "What would you like to do with your PortableApps?$\r$\n$\r$\nChoose 'Remove Punishment' to eliminate the annoying 'not closed properly' warnings, or 'Restore Punishment' to bring back the original behavior."
     Pop $Label
     
-    ${NSD_CreateRadioButton} 20u 60u 200u 12u "Remove Punishment (Patch PortableApps)"
+    ${NSD_CreateRadioButton} 20u 70u 200u 12u "Remove Punishment (Patch PortableApps)"
     Pop $RadioRemove
-    ${NSD_CreateRadioButton} 20u 80u 200u 12u "Restore Punishment (Unpatch PortableApps)"
+    ${NSD_CreateRadioButton} 20u 90u 200u 12u "Restore Punishment (Unpatch PortableApps)"
     Pop $RadioRestore
     
     ; Set default selection based on variable
