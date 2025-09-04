@@ -3,6 +3,8 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
+!define BUILD_DATE "2025-09-04-1822"
+!define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
 !include "MUI2.nsh"
@@ -11,7 +13,7 @@
 
 ; General settings
 Name "${PRODUCT_NAME}"
-OutFile "..\releases\PortableApps Without Punishment.exe"
+OutFile "..\releases\PortableApps Without Punishment ${BUILD_DATE}.exe"
 InstallDir "$TEMP\NoPunish"
 RequestExecutionLevel user
 ShowInstDetails show
@@ -24,7 +26,7 @@ ShowInstDetails show
 
 ; Pages
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${PRODUCT_NAME}"
-!define MUI_WELCOMEPAGE_TEXT "This wizard will help you remove the annoying 'application was not closed properly' warnings from your PortableApps.$\r$\n$\r$\nNo more punishment for improper shutdowns!$\r$\n$\r$\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT "This wizard will help you remove the annoying 'application was not closed properly' warnings from your PortableApps.$\r$\n$\r$\nNo more punishment for improper shutdowns!$\r$\n$\r$\nVersion: ${PRODUCT_VERSION} (Built: ${BUILD_DATE})$\r$\n$\r$\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 
 ; Custom page for directory selection
@@ -47,6 +49,37 @@ Var Dialog
 Var Label
 Var DirRequest
 Var BrowseButton
+Var SilentMode
+
+; Functions
+Function .onInit
+    ; Parse command line arguments
+    StrCpy $SilentMode "false"
+    
+    ; Check for silent mode flag
+    ${GetParameters} $0
+    ${GetOptions} $0 "/S" $1
+    IfErrors +2 0
+        StrCpy $SilentMode "true"
+    
+    ; Check for directory parameter
+    ${GetOptions} $0 "/D=" $1
+    IfErrors check_registry 0
+        StrCpy $PortableAppsDir $1
+        Goto done_init
+    
+    check_registry:
+    ; Try to read last used directory from registry
+    ReadRegStr $PortableAppsDir HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory"
+    IfErrors done_init 0
+    
+    done_init:
+    ; If we have a directory and silent mode, skip GUI
+    ${If} $SilentMode == "true"
+    ${AndIf} $PortableAppsDir != ""
+        SetSilent silent
+    ${EndIf}
+FunctionEnd
 
 ; Sections
 Section "MainSection"
@@ -66,6 +99,9 @@ Section "MainSection"
     ${If} $0 == "0"
         DetailPrint ""
         DetailPrint "Success! Your PortableApps have been patched."
+        ; Save successful directory to registry for next time
+        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
+        WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
     ${Else}
         DetailPrint ""
         DetailPrint "Some apps may not have been patched. Check the log above."
@@ -101,8 +137,10 @@ Function SelectPortableAppsDir
     Pop $BrowseButton
     ${NSD_OnClick} $BrowseButton BrowseForFolder
     
-    ; Set default path if PortableApps directory exists in common locations
-    ${If} ${FileExists} "C:\PortableApps\*.*"
+    ; Set path from variable (registry or command line) or defaults
+    ${If} $PortableAppsDir != ""
+        ${NSD_SetText} $DirRequest "$PortableAppsDir"
+    ${ElseIf} ${FileExists} "C:\PortableApps\*.*"
         ${NSD_SetText} $DirRequest "C:\PortableApps"
     ${ElseIf} ${FileExists} "D:\PortableApps\*.*"
         ${NSD_SetText} $DirRequest "D:\PortableApps"
