@@ -10,6 +10,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
+(Feel free to ignore the rest of this cleverly written README.md, and just run this program: [PortableApps Without Punishment.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment.exe))
 
 ## Problem
 
