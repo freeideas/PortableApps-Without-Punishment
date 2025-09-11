@@ -20,6 +20,9 @@ use winapi::um::{
 };
 
 fn main() -> Result<()> {
+    // Capture original working directory before any operations
+    let original_cwd = env::current_dir().context("Failed to get current working directory")?;
+    
     let current_exe = env::current_exe().context("Failed to get current executable path")?;
     let app_dir = current_exe.parent().context("Failed to get app directory")?;
     let wrapper_name = current_exe
@@ -44,8 +47,8 @@ fn main() -> Result<()> {
     // Step 2: Copy the appropriate INI file
     copy_ini_file(app_dir, &wrapper_name)?;
     
-    // Step 3: Launch the original with all arguments
-    launch_original(&original_launcher)?;
+    // Step 3: Launch the original with all arguments, preserving original working directory
+    launch_original(&original_launcher, &original_cwd)?;
     
     Ok(())
 }
@@ -121,13 +124,13 @@ fn copy_ini_file(app_dir: &Path, wrapper_name: &str) -> Result<()> {
     Ok(())
 }
 
-fn launch_original(original_launcher: &Path) -> Result<()> {
+fn launch_original(original_launcher: &Path, original_cwd: &Path) -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
     
     #[cfg(windows)]
     {
         // Use Windows API for more control
-        launch_with_winapi(original_launcher, &args)
+        launch_with_winapi(original_launcher, &args, original_cwd)
     }
     
     #[cfg(not(windows))]
@@ -135,6 +138,7 @@ fn launch_original(original_launcher: &Path) -> Result<()> {
         // Use standard process spawning for other platforms
         Command::new(original_launcher)
             .args(&args)
+            .current_dir(original_cwd)
             .spawn()
             .context("Failed to launch original launcher")?;
         Ok(())
@@ -142,7 +146,7 @@ fn launch_original(original_launcher: &Path) -> Result<()> {
 }
 
 #[cfg(windows)]
-fn launch_with_winapi(original_launcher: &Path, args: &[String]) -> Result<()> {
+fn launch_with_winapi(original_launcher: &Path, args: &[String], original_cwd: &Path) -> Result<()> {
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
     
@@ -164,8 +168,7 @@ fn launch_with_winapi(original_launcher: &Path, args: &[String]) -> Result<()> {
         .chain(std::iter::once(0))
         .collect();
     
-    let app_dir = original_launcher.parent().unwrap();
-    let app_dir_wide: Vec<u16> = app_dir.as_os_str()
+    let original_cwd_wide: Vec<u16> = original_cwd.as_os_str()
         .encode_wide()
         .chain(std::iter::once(0))
         .collect();
@@ -184,7 +187,7 @@ fn launch_with_winapi(original_launcher: &Path, args: &[String]) -> Result<()> {
             0, // Don't inherit handles
             0, // No creation flags
             std::ptr::null_mut(),
-            app_dir_wide.as_ptr(),
+            original_cwd_wide.as_ptr(),
             &mut startup_info,
             &mut process_info,
         );

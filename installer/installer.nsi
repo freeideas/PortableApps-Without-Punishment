@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-11-1617"
+!define BUILD_DATE "2025-09-11-1722"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
