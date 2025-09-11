@@ -6,6 +6,7 @@ use regex::Regex;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use walkdir::WalkDir;
 
 #[cfg(windows)]
@@ -72,21 +73,21 @@ fn main() -> Result<()> {
                 let app_name = app_launcher.file_name().unwrap_or_default().to_string_lossy();
                 match action.as_str() {
                     "updated" => {
-                        println!("🔄 Updated: {} (already patched, universal launcher updated)", app_name);
+                        println!("Updated: {} (already patched, universal launcher updated)", app_name);
                         updated_count += 1;
                     }
                     "patched" => {
-                        println!("✅ Patched: {} (first-time patch)", app_name);
+                        println!("Patched: {} (first-time patch)", app_name);
                         success_count += 1;
                     }
                     _ => {
-                        println!("✅ Success: {}", app_name);
+                        println!("Success: {}", app_name);
                         success_count += 1;
                     }
                 }
             }
             Err(e) => {
-                println!("❌ Failed: {} - {}", app_launcher.file_name().unwrap_or_default().to_string_lossy(), e);
+                println!("Failed: {} - {}", app_launcher.file_name().unwrap_or_default().to_string_lossy(), e);
             }
         }
     }
@@ -103,9 +104,9 @@ fn main() -> Result<()> {
     if total_processed > 0 {
         println!();
         if updated_count > 0 {
-            println!("🎉 PortableApps have been patched/updated! No more 'not closed properly' warnings!");
+            println!("SUCCESS: PortableApps have been patched/updated! No more 'not closed properly' warnings!");
         } else {
-            println!("🎉 PortableApps have been patched! No more 'not closed properly' warnings!");
+            println!("SUCCESS: PortableApps have been patched! No more 'not closed properly' warnings!");
         }
     }
     
@@ -158,6 +159,48 @@ fn find_portable_apps<P: AsRef<Path>>(root_dir: P) -> Result<Vec<PathBuf>> {
     Ok(apps)
 }
 
+fn find_icocop_exe() -> Option<PathBuf> {
+    // Try to find icocop.exe in the same directory as the replacer
+    if let Ok(current_exe) = env::current_exe() {
+        if let Some(current_dir) = current_exe.parent() {
+            let icocop_path = current_dir.join("icocop.exe");
+            if icocop_path.exists() {
+                return Some(icocop_path);
+            }
+        }
+    }
+    
+    // No fallback needed - icocop.exe should be bundled with the installer
+    None
+}
+
+fn copy_with_icon<P: AsRef<Path>>(source_exe: P, universal_launcher_path: &str, target_path: P) -> Result<()> {
+    if let Some(icocop_path) = find_icocop_exe() {
+        // Use icocop.exe to copy universal launcher with icon from source exe
+        // Arguments: ICON_SOURCE TARGET_EXE OUTPUT_EXE
+        let output = Command::new(&icocop_path)
+            .arg(&source_exe.as_ref())           // ICON_SOURCE (original exe with icons)
+            .arg(universal_launcher_path)        // TARGET_EXE (universal launcher to copy)
+            .arg(target_path.as_ref())           // OUTPUT_EXE (final output with icons)
+            .output()
+            .with_context(|| format!("Failed to execute icocop.exe at {}", icocop_path.display()))?;
+        
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow::anyhow!(
+                "icocop.exe failed with exit code {:?}: {}",
+                output.status.code(),
+                stderr
+            ));
+        }
+    } else {
+        // Fallback to regular copy if icocop.exe is not available
+        fs::copy(universal_launcher_path, target_path.as_ref())
+            .context("failed to copy universal launcher (icocop.exe not found)")?;
+    }
+    Ok(())
+}
+
 fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_path: &str) -> Result<String> {
     let launcher_path = launcher_path.as_ref();
     let launcher_dir = launcher_path.parent()
@@ -176,8 +219,8 @@ fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_pat
     
     // Handle already patched apps by updating the universal launcher
     if original_path.exists() {
-        // App is already patched - just update the universal launcher
-        fs::copy(universal_launcher_path, launcher_path)
+        // App is already patched - copy universal launcher with icon from original
+        copy_with_icon(&original_path, universal_launcher_path, &launcher_path.to_path_buf())
             .context("failed to update universal launcher")?;
         return Ok("updated".to_string());
     }
@@ -186,8 +229,8 @@ fn replace_app_launcher<P: AsRef<Path>>(launcher_path: P, universal_launcher_pat
     fs::rename(launcher_path, &original_path)
         .with_context(|| format!("failed to rename original launcher"))?;
     
-    // Step 2: Copy UniversalLauncher.exe to the original launcher name
-    if let Err(e) = fs::copy(universal_launcher_path, launcher_path) {
+    // Step 2: Copy UniversalLauncher.exe with original icon to the original launcher name
+    if let Err(e) = copy_with_icon(&original_path, universal_launcher_path, &launcher_path.to_path_buf()) {
         // Try to restore original on failure
         let _ = fs::rename(&original_path, launcher_path);
         return Err(e).context("failed to copy universal launcher");

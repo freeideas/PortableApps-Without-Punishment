@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-04-1915"
+!define BUILD_DATE "2025-09-11-1617"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -26,7 +26,7 @@ ShowInstDetails show
 
 ; Pages
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${PRODUCT_NAME}"
-!define MUI_WELCOMEPAGE_TEXT "This wizard can either remove or restore the annoying 'application was not closed properly' warnings in your PortableApps.$\r$\n$\r$\n• Remove Punishment: Eliminate the warnings forever$\r$\n• Restore Punishment: Bring back the medieval shame$\r$\n$\r$\nVersion: ${PRODUCT_VERSION} (Built: ${BUILD_DATE})$\r$\n$\r$\nSupports silent mode: /S /RESTORE /D=path$\r$\n$\r$\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT "This wizard can either remove or restore the annoying 'application was not closed properly' warnings in your PortableApps.$\r$\n$\r$\n- Remove Punishment: Eliminate the warnings forever$\r$\n- Restore Punishment: Bring back the medieval shame$\r$\n$\r$\nVersion: ${PRODUCT_VERSION} (Built: ${BUILD_DATE})$\r$\n$\r$\nSupports silent mode: /S /RESTORE /D=path$\r$\n$\r$\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 
 ; Custom page for mode selection (Remove or Restore punishment)
@@ -177,6 +177,7 @@ Section "MainSection"
         ; Extract files needed for patching
         File "..\\builds\\rust\\replacer.exe"
         File "..\\builds\\rust\\universal-launcher.exe"
+        File "..\\tools\\icocop.exe"
         
         ; Run replacer with the selected directory
         nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe"'
@@ -201,6 +202,7 @@ Section "MainSection"
         ; Clean up temp installation files
         Delete "$INSTDIR\replacer.exe"
         Delete "$INSTDIR\universal-launcher.exe"
+        Delete "$INSTDIR\icocop.exe"
     ${EndIf}
     
     ; Remove temporary directory

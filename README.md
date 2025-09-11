@@ -120,12 +120,14 @@ PortableAppsWithoutPunishment/
 │   ├── universal-launcher/      # Universal launcher that replaces each PortableApp launcher
 │   │   └── src/main.rs         # Fixed: no console window, proper INI backup
 │   ├── replacer/                # Command-line tool that finds and patches PortableApps
-│   │   └── src/main.rs         # Fixed: updates already-patched apps
+│   │   └── src/main.rs         # Enhanced: uses icocop.exe for perfect icon copying
 │   ├── restore-punishment/      # Tool that reverses the patching process
 │   │   └── src/main.rs         # Restores original launchers and punishment
 │   └── Cargo.toml               # Rust workspace configuration
 ├── installer/                   # NSIS installer files
 │   └── installer.nsi            # Toggle installer (Remove/Restore modes)
+├── tools/                       # External utilities
+│   └── icocop.exe              # Icon copying utility for perfect app impersonation
 ├── releases/                    # Pre-built installer for distribution
 │   └── PortableApps Without Punishment.exe  # The installer
 └── docs/                        # Additional documentation
@@ -200,7 +202,7 @@ Improvements and bug fixes are welcome! The codebase is intentionally simple and
 - Additional cleanup patterns for specific apps
 - Enhanced app detection patterns
 - Support for non-standard PortableApp structures
-- Icon extraction and injection for perfect app impersonation
+- ✅ Icon extraction and injection for perfect app impersonation (implemented with icocop.exe)
 
 ## License
 

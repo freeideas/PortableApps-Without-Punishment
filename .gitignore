@@ -24,6 +24,7 @@ bin/
 
 # Temporary files
 tmp/
+4testing/
 *.tmp
 *.temp
 *.bak
