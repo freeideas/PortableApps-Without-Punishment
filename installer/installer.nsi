@@ -40,7 +40,7 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Operation Complete"
-!define MUI_FINISHPAGE_TEXT "The operation completed successfully!$\r$\n$\r$\nIf PortableApps updates restore punishment in the future, you can run this installer silently:$\r$\n$\r$\n$\"PortableApps Without Punishment.exe$\" /S$\r$\n(It will remember your directory and remove punishment again)"
+!define MUI_FINISHPAGE_TEXT "$FinishText"
 !insertmacro MUI_PAGE_FINISH
 
 ; Languages
@@ -57,6 +57,8 @@ Var RestoreMode
 Var RadioRemove
 Var RadioRestore
 Var FinishText
+Var LogFile
+Var ReplacerLogFile
 
 ; Functions
 Function .onInit
@@ -64,6 +66,10 @@ Function .onInit
     StrCpy $SilentMode "false"
     StrCpy $RestoreMode "false"
     StrCpy $PortableAppsDir ""
+    StrCpy $FinishText "Operation completed successfully!"
+    
+    ; Set log file path in temp directory
+    StrCpy $LogFile "$TEMP\PortableApps_NoPunish_installer.log"
     
     ; Parse command line arguments
     ${GetParameters} $0
@@ -138,6 +144,10 @@ Section "MainSection"
     ; Create temporary directory
     SetOutPath "$INSTDIR"
     
+    
+    ; Generate timestamp for replacer log file (using BUILD_DATE as timestamp)
+    StrCpy $ReplacerLogFile "$TEMP\PortableApps_NoPunish_${BUILD_DATE}.log"
+    
     ${If} $RestoreMode == "true"
         ; Restore punishment mode
         DetailPrint "Restoring punishment to PortableApps in: $PortableAppsDir"
@@ -146,9 +156,10 @@ Section "MainSection"
         ; Extract RestorePunishment tool
         File "..\\builds\\rust\\restore-punishment.exe"
         
-        ; Run the restoration tool
+        ; Run the restoration tool with logging
         DetailPrint "Running punishment restoration tool..."
-        nsExec::ExecToLog '"$INSTDIR\restore-punishment.exe" "$PortableAppsDir"'
+        DetailPrint "Log file: $ReplacerLogFile"
+        nsExec::ExecToLog '"$INSTDIR\restore-punishment.exe" "$PortableAppsDir" "--log" "$ReplacerLogFile"'
         Pop $0
         
         ${If} $0 == "0"
@@ -160,11 +171,11 @@ Section "MainSection"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
             
-            StrCpy $FinishText "Punishment has been restored to your PortableApps!$\r$\n$\r$\nYour apps will now punish you with 'not closed properly' warnings again."
+            StrCpy $FinishText "Punishment has been restored to your PortableApps!$\r$\n$\r$\nYour apps will now punish you with 'not closed properly' warnings again.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${Else}
             DetailPrint ""
             DetailPrint "Some apps may not have been restored. Check the log above."
-            StrCpy $FinishText "Restoration completed with some issues. Check the log above for details."
+            StrCpy $FinishText "Restoration completed with some issues.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${EndIf}
         
         ; Clean up
@@ -179,8 +190,10 @@ Section "MainSection"
         File "..\\builds\\rust\\universal-launcher.exe"
         File "..\\tools\\icocop.exe"
         
-        ; Run replacer with the selected directory
-        nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe"'
+        ; Run replacer with the selected directory and logging
+        DetailPrint "Running replacer tool..."
+        DetailPrint "Log file: $ReplacerLogFile"
+        nsExec::ExecToLog '"$INSTDIR\replacer.exe" "$PortableAppsDir" "$INSTDIR\universal-launcher.exe" "--log" "$ReplacerLogFile"'
         Pop $0
         
         ${If} $0 == "0"
@@ -192,11 +205,11 @@ Section "MainSection"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
             
-            StrCpy $FinishText "Your PortableApps have been patched!$\r$\n$\r$\nNo more annoying 'not closed properly' warnings!"
+            StrCpy $FinishText "Your PortableApps have been patched!$\r$\n$\r$\nNo more annoying 'not closed properly' warnings!$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${Else}
             DetailPrint ""
             DetailPrint "Some apps may not have been patched. Check the log above."
-            StrCpy $FinishText "Patching completed with some issues. Check the log above for details."
+            StrCpy $FinishText "Patching completed with some issues.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${EndIf}
         
         ; Clean up temp installation files

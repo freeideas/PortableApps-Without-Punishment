@@ -225,7 +225,13 @@ fn confirm_restore() -> bool {
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
                 let input = input.trim().to_lowercase();
-                input == "y" || input == "yes"
+                let confirmed = input == "y" || input == "yes";
+                if confirmed {
+                    logger.log("User confirmed restoration");
+                } else {
+                    logger.log("User cancelled restoration");
+                }
+                confirmed
             }
             Err(_) => false,
         }
