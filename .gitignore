@@ -30,6 +30,9 @@ tmp/
 *.bak
 *~
 
+# Log files
+logs/
+
 # Build artifacts
 *.o
 *.obj

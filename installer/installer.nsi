@@ -3,7 +3,7 @@
 
 !define PRODUCT_NAME "PortableApps Without Punishment"
 !define PRODUCT_VERSION "1.0"
-!define BUILD_DATE "2025-09-12-1024"
+!define BUILD_DATE "2025-09-12-1305"
 !define REGISTRY_KEY "HKCU\Software\PortableAppsWithoutPunishment"
 
 ; Include Modern UI
@@ -40,7 +40,7 @@ Page custom SelectPortableAppsDir ValidateSelection
 !insertmacro MUI_PAGE_INSTFILES
 
 !define MUI_FINISHPAGE_TITLE "Operation Complete"
-!define MUI_FINISHPAGE_TEXT "$FinishText"
+!define MUI_FINISHPAGE_TEXT "Your PortableApps have been successfully processed!$\r$\n$\r$\nNo more annoying 'not closed properly' warnings!$\r$\n$\r$\nCheck the log file in your temp directory for details."
 !insertmacro MUI_PAGE_FINISH
 
 ; Languages
@@ -52,30 +52,29 @@ Var Dialog
 Var Label
 Var DirRequest
 Var BrowseButton
-Var SilentMode
 Var RestoreMode
 Var RadioRemove
 Var RadioRestore
-Var FinishText
 Var LogFile
 Var ReplacerLogFile
 
 ; Functions
 Function .onInit
     ; Initialize variables
-    StrCpy $SilentMode "false"
     StrCpy $RestoreMode "false"
     StrCpy $PortableAppsDir ""
-    StrCpy $FinishText "Operation completed successfully!"
     
     ; Set log file path in temp directory
     StrCpy $LogFile "$TEMP\PortableApps_NoPunish_installer.log"
     
     ; Parse command line arguments
     ${GetParameters} $0
-    ${GetOptions} $0 "/S" $1
-    IfErrors +2 0
-        StrCpy $SilentMode "true"
+    
+    ; Check for TEST flag for automated testing
+    ${GetOptions} $0 "/TEST" $1
+    IfErrors +3 0
+        SetSilent silent
+        SetAutoClose true
     
     ; Check for restore mode parameter
     ${GetOptions} $0 "/RESTORE" $1
@@ -91,18 +90,20 @@ Function .onInit
     check_registry:
     ; Try to read last used directory from registry for convenience
     ReadRegStr $PortableAppsDir HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory"
-    IfErrors done_init 0
     
     done_init:
-    ; If we have all parameters and silent mode, skip GUI
-    ${If} $SilentMode == "true"
-    ${AndIf} $PortableAppsDir != ""
-        SetSilent silent
-    ${EndIf}
+    ; In test/silent mode, we need a directory
+    IfSilent 0 +3
+        ${If} $PortableAppsDir == ""
+            Abort "Test mode requires /D=directory parameter"
+        ${EndIf}
 FunctionEnd
 
 ; Custom function for mode selection
 Function SelectMode
+    ; Skip in silent mode
+    IfSilent done
+    
     nsDialogs::Create 1018
     Pop $Dialog
     
@@ -128,15 +129,22 @@ Function SelectMode
     ${EndIf}
     
     nsDialogs::Show
+    
+    done:
 FunctionEnd
 
 Function ValidateMode
+    ; Skip in silent mode (mode already set from command line)
+    IfSilent done
+    
     ${NSD_GetState} $RadioRestore $0
     ${If} $0 == 1
         StrCpy $RestoreMode "true"
     ${Else}
         StrCpy $RestoreMode "false"
     ${EndIf}
+    
+    done:
 FunctionEnd
 
 ; Sections
@@ -170,12 +178,9 @@ Section "MainSection"
             ; Save directory for future runs
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
-            
-            StrCpy $FinishText "Punishment has been restored to your PortableApps!$\r$\n$\r$\nYour apps will now punish you with 'not closed properly' warnings again.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${Else}
             DetailPrint ""
             DetailPrint "Some apps may not have been restored. Check the log above."
-            StrCpy $FinishText "Restoration completed with some issues.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${EndIf}
         
         ; Clean up
@@ -204,12 +209,9 @@ Section "MainSection"
             ; Save directory for future runs
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastDirectory" "$PortableAppsDir"
             WriteRegStr HKCU "Software\PortableAppsWithoutPunishment" "LastRun" "${BUILD_DATE}"
-            
-            StrCpy $FinishText "Your PortableApps have been patched!$\r$\n$\r$\nNo more annoying 'not closed properly' warnings!$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${Else}
             DetailPrint ""
             DetailPrint "Some apps may not have been patched. Check the log above."
-            StrCpy $FinishText "Patching completed with some issues.$\r$\n$\r$\nLog file saved to:$\r$\n$ReplacerLogFile"
         ${EndIf}
         
         ; Clean up temp installation files
@@ -224,6 +226,9 @@ SectionEnd
 
 ; Custom functions
 Function SelectPortableAppsDir
+    ; Skip in silent mode
+    IfSilent done
+    
     nsDialogs::Create 1018
     Pop $Dialog
     
@@ -258,6 +263,8 @@ Function SelectPortableAppsDir
     ${EndIf}
     
     nsDialogs::Show
+    
+    done:
 FunctionEnd
 
 Function BrowseForFolder
@@ -269,6 +276,9 @@ Function BrowseForFolder
 FunctionEnd
 
 Function ValidateSelection
+    ; Skip validation in silent mode (already checked in .onInit)
+    IfSilent done
+    
     ${NSD_GetText} $DirRequest $PortableAppsDir
     
     ; Check if directory exists
@@ -278,5 +288,7 @@ Function ValidateSelection
         MessageBox MB_OK|MB_ICONSTOP "Please select a valid directory containing PortableApps."
         Abort
     ${EndIf}
+    
+    done:
 FunctionEnd
 

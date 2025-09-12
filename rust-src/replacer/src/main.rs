@@ -241,23 +241,28 @@ fn find_portable_apps<P: AsRef<Path>>(root_dir: P, logger: &mut Logger) -> Resul
     Ok(apps)
 }
 
-fn find_icocop_exe() -> Option<PathBuf> {
+fn find_icocop_exe(logger: &mut Logger) -> Option<PathBuf> {
     // Try to find icocop.exe in the same directory as the replacer
     if let Ok(current_exe) = env::current_exe() {
         if let Some(current_dir) = current_exe.parent() {
             let icocop_path = current_dir.join("icocop.exe");
+            logger.log(&format!("  Looking for icocop.exe at: {}", icocop_path.display()));
             if icocop_path.exists() {
+                logger.log("  Found icocop.exe");
                 return Some(icocop_path);
+            } else {
+                logger.log("  icocop.exe not found at expected location");
             }
         }
     }
     
-    // No fallback needed - icocop.exe should be bundled with the installer
+    // No fallback to PATH - we only use the bundled version
+    logger.log("  Warning: icocop.exe not bundled with installer");
     None
 }
 
 fn copy_with_icon<P: AsRef<Path>>(source_exe: P, universal_launcher_path: &str, target_path: P, logger: &mut Logger) -> Result<()> {
-    if let Some(icocop_path) = find_icocop_exe() {
+    if let Some(icocop_path) = find_icocop_exe(logger) {
         // Use icocop.exe to copy universal launcher with icon from source exe
         // Arguments: ICON_SOURCE TARGET_EXE OUTPUT_EXE
         logger.log(&format!("  Using icocop.exe to copy icon from {} to {}", 
@@ -272,6 +277,14 @@ fn copy_with_icon<P: AsRef<Path>>(source_exe: P, universal_launcher_path: &str, 
         
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            logger.log(&format!("  ERROR: icocop.exe failed with exit code {:?}", output.status.code()));
+            if !stderr.is_empty() {
+                logger.log(&format!("  STDERR: {}", stderr));
+            }
+            if !stdout.is_empty() {
+                logger.log(&format!("  STDOUT: {}", stdout));
+            }
             return Err(anyhow::anyhow!(
                 "icocop.exe failed with exit code {:?}: {}",
                 output.status.code(),

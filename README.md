@@ -13,7 +13,7 @@ Sound familiar? Every time your app crashes, loses power, or Windows decides to 
 
 **This ends now.** PortableApps Without Punishment eliminates these annoying warnings forever by automatically cleaning up runtime data before each launch.
 
-(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-11-1722.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-11-1722.exe))
+(Feel free to ignore the rest of the clever banter here, and just run this program: [PortableApps Without Punishment 2025-09-12-1305.exe](https://github.com/freeideas/PortableApps-Without-Punishment/raw/main/releases/PortableApps%20Without%20Punishment%202025-09-12-1305.exe))
 
 ## Problem
 
@@ -44,7 +44,7 @@ The UniversalLauncher acts as a transparent replacement that:
 
 ## Usage
 
-Simply download and run the latest `PortableApps Without Punishment YYYY-MM-DD-HHMM.exe` from the releases folder:
+Simply download and run the latest installer from the releases folder:
 
 1. **Choose Operation**: Select either "Remove Punishment" (default) or "Restore Punishment"
    - **Remove Punishment**: Eliminates the annoying warnings forever
@@ -58,81 +58,65 @@ Simply download and run the latest `PortableApps Without Punishment YYYY-MM-DD-H
 
 4. **Done!** The installer remembers your directory for future runs
 
-### Silent Mode
+### Command-Line Options
 
-For automation or batch processing:
+The installer supports command-line parameters to streamline operation:
 
 ```cmd
-# Remove punishment (default)
-"PortableApps Without Punishment.exe" /S /D="D:\PortableApps"
+# Pre-fill directory for removing punishment
+"PortableApps Without Punishment.exe" /D="D:\PortableApps"
 
-# Restore punishment
-"PortableApps Without Punishment.exe" /S /RESTORE /D="D:\PortableApps"
+# Pre-fill directory and pre-select restore mode
+"PortableApps Without Punishment.exe" /RESTORE /D="D:\PortableApps"
 ```
 
 **Parameters:**
-- `/S` - Silent mode (no GUI)
-- `/RESTORE` - Restore punishment mode (default is remove)
-- `/D=path` - Target directory path
+- `/RESTORE` - Pre-selects restore punishment mode (default is remove)
+- `/D=path` - Pre-fills the target directory path
 
-## How It Works
+### True Silent Mode
 
-The Universal Launcher performs these steps each time it runs:
+For fully automated operation without any GUI, use the included batch script:
 
-1. **Configuration Backup**: Copies `App/AppInfo/Launcher/[AppName].ini` to `[AppName]_original.ini` (overwrites if exists)
-2. **Cleanup Phase**: Removes all `PortableApps.comLauncherRuntimeData-*.ini` files and other state tracking files (`.lock`, `.pid`, `.tmp`) from the Data directory that trigger the "not closed properly" warning
-3. **Launch Original**: Executes `[AppName]_original.exe` (the renamed original launcher) with all provided arguments
-4. **Exit Cleanly**: Closes immediately after launching, adding zero overhead to the running application
+```cmd
+# Remove punishment silently
+silent-patch.bat "D:\PortableApps" remove
 
-## Building from Source
-
-### Requirements
-- Rust compiler with Windows cross-compilation support
-- MinGW-w64 linker (for cross-compilation on Linux/Mac)  
-- NSIS (for building the GUI installer)
-
-### Compile Commands
-
-#### Rust Components (Cross-compile for Windows):
-```bash
-# Install Windows target
-rustup target add x86_64-pc-windows-gnu
-
-# Build both tools
-cd rust-src
-cargo build --release --target x86_64-pc-windows-gnu
-
-# Copy to builds directory
-cp target/x86_64-pc-windows-gnu/release/*.exe ../builds/rust/
+# Restore punishment silently
+silent-patch.bat "D:\PortableApps" restore
 ```
 
-#### GUI Installer (NSIS):
-```bash
-makensis installer/installer.nsi
+This script directly uses the command-line tools for complete automation.
+
+## Is It Safe?
+
+Yes! PortableApps Without Punishment:
+- ✅ Creates backups of all modified files
+- ✅ Can be completely reversed anytime
+- ✅ Doesn't modify your actual programs or data
+- ✅ Only removes temporary files that cause warnings
+- ✅ Preserves all your settings and preferences
+
+## For Developers
+
+Technical documentation, architecture details, and build instructions are available in [SPECIFICATION.md](./SPECIFICATION.md).
+
+### Testing the Installer
+
+For automated testing without GUI:
+
+```cmd
+# Test remove mode
+test-installer.bat remove
+
+# Test restore mode  
+test-installer.bat restore
+
+# Or directly with TEST flag
+"releases\PortableApps Without Punishment.exe" /TEST /D="C:\path\to\test"
 ```
 
-## Project Structure
-
-```
-PortableAppsWithoutPunishment/
-├── README.md                    # This file
-├── rust-src/                    # Rust source code
-│   ├── universal-launcher/      # Universal launcher that replaces each PortableApp launcher
-│   │   └── src/main.rs         # Fixed: no console window, proper INI backup
-│   ├── replacer/                # Command-line tool that finds and patches PortableApps
-│   │   └── src/main.rs         # Enhanced: uses icocop.exe for perfect icon copying
-│   ├── restore-punishment/      # Tool that reverses the patching process
-│   │   └── src/main.rs         # Restores original launchers and punishment
-│   └── Cargo.toml               # Rust workspace configuration
-├── installer/                   # NSIS installer files
-│   └── installer.nsi            # Toggle installer (Remove/Restore modes)
-├── tools/                       # External utilities
-│   └── icocop.exe              # Icon copying utility for perfect app impersonation
-├── releases/                    # Pre-built installer for distribution
-│   └── PortableApps Without Punishment.exe  # The installer
-└── docs/                        # Additional documentation
-    └── kick.jpg                 # Punishment illustration
-```
+The `/TEST` flag runs the installer silently for testing purposes.
 
 ## Compatibility
 
@@ -146,37 +130,25 @@ Tested and working with:
 - LibreOffice Portable
 - And all other PortableApps.com format applications
 
-## Technical Details
+## What Gets Modified?
 
-### Files Cleaned
+Only the launcher files are changed:
+- `AppNamePortable.exe` → Replaced with our wrapper
+- `AppNamePortable_original.exe` → Your original launcher (backup)
 
-The wrapper removes these file types to prevent the warning:
-- `PortableApps.comLauncherRuntimeData-*.ini` - Main runtime tracking files
-- `*.lock` files in Data/settings/ - Process lock files
-- `*.pid` files - Process ID tracking files
-- `*.tmp` and `*.temp` files - Temporary state files
-- Contents of Data/Temp/ directory - Temporary working files
+**Nothing else is touched** - all your data, settings, and the actual programs remain exactly as they were.
 
-### Safety
+## Latest Version
 
-The wrapper only removes temporary runtime files. It never touches:
-- Your actual settings and preferences
-- User data files
-- Application files
-- Configuration that should persist
+**Current Build: 2025-09-12-1305**
 
-## Recent Fixes & Improvements
+- Fixed installer finish page display issue
+- Added `/TEST` flag for automated testing
+- Improved icon preservation with icocop.exe
+- Better error reporting and logging
+- Windows 11 compatibility
 
-**Version 2025-09-04-1859 includes major fixes:**
-
-- **Fixed Console Window Flash**: Universal Launcher now builds as Windows GUI application, eliminating the brief console window that appeared when launching apps
-- **Fixed INI Backup Issue**: Corrected INI file backup to create `[AppName]_original.ini` instead of incorrect `launcher.ini`
-- **Smart Update System**: Replacer now updates already-patched apps with fixed components instead of skipping them
-- **Toggle Operation**: Single installer can both remove and restore punishment
-- **Silent Mode Support**: Command-line automation with `/S /RESTORE /D=path` parameters
-
-**If you used a previous version that had issues:**
-Simply run the new installer in "Remove Punishment" mode on your PortableApps directory. It will automatically update all previously patched apps with the fixed Universal Launcher.
+If you installed an older version, just run the new installer to update.
 
 ## Troubleshooting
 
@@ -194,15 +166,15 @@ Simply run the new installer in "Remove Punishment" mode on your PortableApps di
 - This was fixed in the latest version - run the installer again to update
 - The Universal Launcher now builds as Windows GUI application
 
-## Contributing
+## Need Help?
 
-Improvements and bug fixes are welcome! The codebase is intentionally simple and well-commented for easy modification.
+**Common Issues:**
 
-### Key areas for contribution:
-- Additional cleanup patterns for specific apps
-- Enhanced app detection patterns
-- Support for non-standard PortableApp structures
-- ✅ Icon extraction and injection for perfect app impersonation (implemented with icocop.exe)
+- **Installer can't find apps** → Point it to your PortableApps folder (contains folders like FirefoxPortable)
+- **Some apps still show warnings** → Run the installer again to update them
+- **Want to undo changes** → Run installer and choose "Restore Punishment"
+
+For other issues, check our [troubleshooting guide](#troubleshooting) below.
 
 ## License
 
